@@ -36,3 +36,27 @@ builder.Services.AddAuthentication("Bearer")
                 Encoding.UTF8.GetBytes(jwtSettings.Key))
         };
     });
+
+
+    📁 src/
+├── 📁 MyBlog.Domain/          (Entities, Interfaces, Enums)
+│   ├── 📁 Entities/           # Post.cs, Comment.cs, User.cs
+│   ├── 📁 Interfaces/         # IPostRepository, IAuthService
+│   └── 📁 Common/             # BaseEntity.cs
+│
+├── 📁 MyBlog.Application/     (Business Logic, DTOs, Mappings)
+│   ├── 📁 DTOs/               # PostDto.cs, LoginRequest.cs
+│   ├── 📁 Services/           # PostService.cs, CommentService.cs
+│   ├── 📁 Validators/         # FluentValidation klasları
+│   └── 📁 Mappings/           # AutoMapper profilləri
+│
+├── 📁 MyBlog.Infrastructure/  (Data, Identity, External Services)
+│   ├── 📁 Data/               # AppDbContext.cs
+│   ├── 📁 Repositories/       # PostRepository.cs
+│   ├── 📁 Identity/           # JwtTokenGenerator.cs
+│   └── 📁 Migrations/         # EF Core migrations
+│
+└── 📁 MyBlog.API/             (Controllers, Middlewares, Config)
+    ├── 📁 Controllers/        # PostsController.cs, AuthController.cs
+    ├── 📁 Middlewares/        # ErrorHandlerMiddleware.cs
+    └── 📄 Program.cs          # Dependency Injection & Pipeline

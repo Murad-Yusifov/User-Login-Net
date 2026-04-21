@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TodoApi.BlogModel;
 
 public class AppDbContext : DbContext
 {
@@ -10,4 +11,5 @@ public class AppDbContext : DbContext
 
       public DbSet<Users> Users =>  Set<Users>();
       public DbSet<AdminModel> Admin => Set<AdminModel>();
+      public DbSet<Comment> Comments => Set<Comment>();
     }

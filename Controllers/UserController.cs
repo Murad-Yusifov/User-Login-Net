@@ -94,7 +94,6 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -102,22 +101,24 @@ public class UserController : ControllerBase
 {
     private readonly IUserService _service;
     private readonly IAuthService _authService;
+    private readonly PasswordService _hashPassword;
 
-    public UserController(IUserService service, IAuthService authService)
+    public UserController(IUserService service, IAuthService authService, PasswordService passwordService)
     {
         _service = service;
         _authService = authService;
+        _hashPassword = passwordService;
     }
 
     [HttpGet]
-    [Authorize(Roles ="Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetAll()
     {
 
-    foreach (var c in User.Claims)
-    {
-        Console.WriteLine($"{c.Type} : {c.Value}");
-    }
+        foreach (var c in User.Claims)
+        {
+            Console.WriteLine($"{c.Type} : {c.Value}");
+        }
         var users = await _service.GetAll();
         return Ok(users);
     }
@@ -209,6 +210,35 @@ public class UserController : ControllerBase
         {
             return Conflict(new { message = ex.Message });
         }
+
+    }
+
+    [HttpGet("test")]
+    [Authorize(Roles = "User")]
+    public async Task<IActionResult> GetUserModelAsync()
+    {
+        var data = await _service.GetAll();
+        return Ok(data);
+
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Manager")]
+    public async Task<IActionResult> ManagerAddUserAsync(UserModelDTO dto)
+    {
+        var hashedPassword = _hashPassword.HashPassword(dto.Password);
+        var user = new Users
+        {
+            Name = dto.Name,
+            Email = dto.Email,
+            Password = hashedPassword,
+            Roles = dto.Role,
+        };
+
+        //  await _authService.LoginAsync(user);
+        await _service.CreateAsync(user);
+        return Ok(user);       
+
 
     }
 }

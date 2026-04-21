@@ -44,6 +44,7 @@ using System.Text;
 // using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,13 +70,18 @@ builder.Services.AddAuthentication("Bearer")
     };
 });
 
-builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("ToDoList"));
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+// builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("ToDoList"));
+// builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
+builder.Services.Configure<MongoDBSetting>(
+    builder.Configuration.GetSection("MongoDB")
+);
+builder.Services.AddSingleton<MongoDBContext>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAdminService, AdminServise>();
 builder.Services.AddScoped<PasswordService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
 // builder.Services.AddSingleton<UserService>();
 builder.Services.AddSingleton<ITokenService, TokenService>();
 
