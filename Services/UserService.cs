@@ -1,16 +1,17 @@
 
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 
 public class UserService : IUserService
 {
 
     private readonly PasswordService _passwordService;
-    private readonly AppDbContext _context;
+    private readonly IMongoCollection<Users> _context;
 
-    public UserService(AppDbContext context, PasswordService passwordService)
+    public UserService(IMongoDatabase database, PasswordService passwordService)
     {
         _passwordService = passwordService;
-        _context = context;
+        _context = database.GetCollection<Users>("Users");
     }
 
 
@@ -18,12 +19,12 @@ public class UserService : IUserService
     private async Task<Users?> FindUserAsync(int id)
     {
 
-        return await _context.Users.FindAsync(id);
+        return await _context.Find(u=>u.Id==id).FirstOrDefaultAsync();
     }
 
     public async Task<List<Users>> GetAll()
     {
-        return await _context.Users.ToListAsync();
+        return await _context.Find(_=>true).ToListAsync();
 
     }
 
@@ -38,7 +39,7 @@ public class UserService : IUserService
 
     public async Task<Users?> GetByMailName(string email)
     {
-        return await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
+        return await _context.Find(u => u.Email.ToLower() == email.ToLower()).FirstOrDefaultAsync();
     }
 
     public async Task<Users> CreateAsync(Users users)
@@ -46,17 +47,16 @@ public class UserService : IUserService
 
         // var hashedPassword = _passwordService.HashPassword(users.Password);
 
-        var user = new Users
-        {
-            Name = users.Name,
-            Email = users.Email,
-            Password = users.Password,
-            Roles=users.Roles
-        };
-        await _context.Users.AddAsync(user);
-        await _context.SaveChangesAsync();
+        // var user = new Users
+        // {
+        //     Name = users.Name,
+        //     Email = users.Email,
+        //     Password = users.Password,
+        //     Roles=users.Roles
+        // };
+        await _context.InsertOneAsync(users);
 
-        return user;
+        return users;
     }
 
     public async Task<Users?> UpdateAsync(int id, UserModelDTO inputUser)
@@ -71,8 +71,6 @@ public class UserService : IUserService
         item.Name = inputUser.Name;
         item.Email = inputUser.Email;
         item.Password = inputUser.Password;
-
-        await _context.SaveChangesAsync();
 
         return item;
 
@@ -89,9 +87,7 @@ public class UserService : IUserService
             return null;
         }
 
-        _context.Users.Remove(item);
-
-        await _context.SaveChangesAsync();
+        await _context.DeleteOneAsync(u=>u.Id==id);
 
         return item.Id;
     }
@@ -106,16 +102,14 @@ public class UserService : IUserService
 
         item.Password = _passwordService.HashPassword(user.Password);
 
-        await _context.SaveChangesAsync();
-
         return item;
 
     }
 
     public async Task<Experience> CreateNewExperienceAsync(Experience experience)
     {
-        _context.Experience.Add(experience);
-        await _context.SaveChangesAsync();
+        // _context.Experience.Add(experience);
+       
 
         return experience;
     }

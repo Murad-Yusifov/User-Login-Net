@@ -44,6 +44,7 @@ using System.Text;
 // using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Driver;
 using Newtonsoft.Json.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -70,18 +71,29 @@ builder.Services.AddAuthentication("Bearer")
     };
 });
 
-// builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("ToDoList"));
-// builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("ToDoList"));
+builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.Configure<MongoDBSetting>(
-    builder.Configuration.GetSection("MongoDB")
-);
-builder.Services.AddSingleton<MongoDBContext>();
+
+builder.Services.AddSingleton<IMongoClient>(sp =>
+{
+    var settings = builder.Configuration.GetSection("MongoDB:ConnectionString").Value;
+    return new MongoClient(settings);
+});
+
+builder.Services.AddSingleton(sp =>
+{
+    var client = sp.GetRequiredService<IMongoClient>();
+    var dbName = builder.Configuration["MongoDB:DatabaseName"];
+    return client.GetDatabase(dbName);
+});
+
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAdminService, AdminServise>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<BookService>();
 // builder.Services.AddSingleton<UserService>();
 builder.Services.AddSingleton<ITokenService, TokenService>();
 

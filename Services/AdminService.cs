@@ -21,7 +21,7 @@ public class AdminServise : IAdminService
         {
             Name = dto.Name,
             Email = dto.Email,
-            Password = dto.Password,
+            Password = _passwordService.HashPassword(dto.Password),
             Role = dto.Role,
             Position = dto.Position,
         };

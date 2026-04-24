@@ -102,12 +102,14 @@ public class UserController : ControllerBase
     private readonly IUserService _service;
     private readonly IAuthService _authService;
     private readonly PasswordService _hashPassword;
+    private readonly BookService _bookService;
 
-    public UserController(IUserService service, IAuthService authService, PasswordService passwordService)
+    public UserController(IUserService service, IAuthService authService, PasswordService passwordService, BookService bookService)
     {
         _service = service;
         _authService = authService;
         _hashPassword = passwordService;
+        _bookService =bookService;
     }
 
     [HttpGet]
@@ -240,6 +242,14 @@ public class UserController : ControllerBase
         return Ok(user);       
 
 
+    }
+
+    [HttpPost("bookSearch")]
+    public async Task<IActionResult> GetBookAsync(string query)
+    {
+        var data = await _bookService.SearchBook(query);
+
+        return Ok(data);
     }
 }
 
